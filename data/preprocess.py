@@ -1,18 +1,17 @@
 #!/usr/bin/env python
+import argparse
 import os
-#import matplotlib.image as mpimg
 import cv2
 import numpy as np
 import torch
 
 
 N_IMAGES = 202599
-IMG_SIZE = 256
-IMG_PATH = 'images_%i_%i.pth' % (IMG_SIZE, IMG_SIZE)
 ATTR_PATH = 'attributes.pth'
 
 
-def preprocess_images():
+def preprocess_images(IMG_SIZE):
+    IMG_PATH = 'images_%i_%i.pth' % (IMG_SIZE, IMG_SIZE)
 
     if os.path.isfile(IMG_PATH):
         print("%s exists, nothing to do." % IMG_PATH)
@@ -63,5 +62,15 @@ def preprocess_attributes():
     torch.save(attributes, ATTR_PATH)
 
 
-preprocess_images()
+
+parser = argparse.ArgumentParser(description='Preprocess images and convert them to torch file format')
+parser.add_argument("--img_sz", type=int, default=256,
+                    help="Image sizes (images have to be squared)")
+
+params = parser.parse_args()
+
+
+print("Preprocessing images and resizing to %ix%i"%(params.img_sz,params.img_sz))
+
+preprocess_images(params.img_sz)
 preprocess_attributes()

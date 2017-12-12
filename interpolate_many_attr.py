@@ -56,13 +56,14 @@ params.h_flip = False
 params.img_sz = ae.img_sz
 params.attr   = ae.attr
 params.n_attr = ae.n_attr
-if not (len(params.attr) == 1 and params.n_attr == 2):
-    raise Exception("The model must use a single boolean attribute only.")
+#if not (len(params.attr) == 1 and params.n_attr == 2):
+    #raise Exception("The model must use a single boolean attribute only.")
 
 # load dataset
 data, attributes = load_images(params)
 test_data = DataSampler(data[2], attributes[2], params)
-
+#print(attributes[2])
+#raise Exception()
 
 def get_interpolations(ae, images, attributes, params):
     """
@@ -72,16 +73,21 @@ def get_interpolations(ae, images, attributes, params):
     enc_outputs = ae.encode(images)
 
     # interpolation values
-    alphas = np.linspace(1 - params.alpha_min, params.alpha_max, params.n_interpolations)
-    alphas = [torch.FloatTensor([1 - alpha, alpha]) for alpha in alphas]
+    #alphas = np.linspace(1 - params.alpha_min, params.alpha_max, params.n_interpolations)
+    #alphas = [torch.FloatTensor([1 - alpha, alpha]) for alpha in alphas]
+    
 
     # original image / reconstructed image / interpolations
     outputs = []
     outputs.append(images)
     outputs.append(ae.decode(enc_outputs, attributes)[-1])
-    for alpha in alphas:
-        alpha = Variable(alpha.unsqueeze(0).expand((len(images), 2)).cuda())
-        outputs.append(ae.decode(enc_outputs, alpha)[-1])
+    for i in range(params.n_interpolations):
+        alpha = attributes.data.clone()
+        alpha=(alpha-1)*(-1)
+        #print(alpha)
+        #alpha[alpha>0]
+        
+        outputs.append(ae.decode(enc_outputs, Variable(alpha.cuda()))[-1])
 
     # return stacked images
     return torch.cat([x.unsqueeze(1) for x in outputs], 1).data.cpu()
